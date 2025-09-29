@@ -1,5 +1,5 @@
 <?php
-require('restclient.php');
+// Note: RestClient dependency removed as Azure Maps uses direct tile URLs
 
 if (isset($_GET['service'])) {
     $provider=$_GET['service'];
@@ -12,45 +12,22 @@ if ($provider=="bing") {
     if (isset($_GET['apicode'])) {
         $apicode=$_GET['apicode'];
     } else {
-      $apicode=""; //Put your API Code here
+      $apicode=""; //Put your Azure Maps subscription key here
     }   
 
     if(isset($_GET['type'])) {
        $type=$_GET['type'];
     } else {
-        $type="Aerial";
+        $type="satellite";
     }
 
-    $api = new RestClient(array(
-       'base_url' => "http://dev.virtualearth.net/REST/V1/",
-        //'format' => 'json',
-        // https://dev.twitter.com/docs/auth/application-only-auth
-       //'headers' => array('Authorization' => 'Bearer '.OAUTH_BEARER), 
-    ));
-    $result = $api->get("Imagery/Metadata/".$type."?mapVersion=v1&output=json&key=$apicode");
-    // GET http://api.twitter.com/1.1/search/tweets.json?q=%23php
-    if($result->info->http_code == 200) {
-        //$resp = array();
-        $response = $result->decode_response();
-        //$resp = json_decode($response);
-        //$response=$result->decode_response();
-        $bing_url=$response->resourceSets[0]->resources[0]->imageUrl;
-
-        $subdomain = $response->resourceSets[0]->resources[0]->imageUrlSubdomains;
-        //var_dump($subdomain);
-        $subdomain_nr = rand(0,count($subdomain)-1);
-
-        $subdomain = $subdomain[$subdomain_nr];
-        //echo $bing_url;
-        $bing_url2= str_replace("{subdomain}", $subdomain,$bing_url);
-
-        $bing_url= str_replace("{quadkey}", toQuad($_GET['x'], $_GET['y'], $_GET['z']),$bing_url2);
-        //echo $bing_url;
-        header('Location: '.$bing_url);
-    }
-	else {
-		echo "Error: ".$result->info->http_code." ". $result['errorDetails'][0];
-	}
+    // Azure Maps tile service - direct tile access without metadata API
+    $quadkey = toQuad($_GET['x'], $_GET['y'], $_GET['z']);
+    
+    // Azure Maps tile URL format
+    $azure_url = "https://atlas.microsoft.com/map/tile?subscription-key=$apicode&api-version=2.0&tilesetId=microsoft.imagery&quadkey=$quadkey";
+    
+    header('Location: '.$azure_url);
 }
 
 elseif ($provider=="google") {
