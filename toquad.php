@@ -103,6 +103,29 @@ elseif ($provider=="yandex") {
     header('Location: '.$base_url);
 }
 
+elseif ($provider=="azure") {
+
+    if (isset($_GET['apicode'])) {
+        $apicode=$_GET['apicode'];
+    } else {
+      $apicode=""; //Put your Azure Maps subscription key here
+    }   
+
+    if(isset($_GET['type'])) {
+       $type=$_GET['type'];
+    } else {
+        $type="satellite";
+    }
+
+    // Azure Maps tile service - direct tile access without metadata API
+    $quadkey = toQuad($_GET['x'], $_GET['y'], $_GET['z']);
+    
+    // Azure Maps tile URL format
+    $azure_url = "https://atlas.microsoft.com/map/tile?subscription-key=$apicode&api-version=2.0&tilesetId=microsoft.imagery&quadkey=$quadkey";
+    
+    header('Location: '.$azure_url);
+}
+
 function toQuad($tileX, $tileY, $levelOfDetail) {
     $quadKey = '';
     for ($i = $levelOfDetail; $i > 0; $i--) {
